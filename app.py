@@ -2,12 +2,16 @@
 from datetime import datetime
 import uuid
 import requests
+import protect
+
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
-WEATHER_API_KEY = "62b83a7f9212447aba853454240907"
-MAPS_API_KEY = "AIzaSyA6JxoN5m0SE7zMcZpk1FtYhEpX3r4lW9Q"
+
+
+WEATHER_API_KEY = protect.WEATHER_API_KEY
+MAPS_API_KEY = protect.MAPS_API_KEY
 WEATHER_URL = "http://api.weatherapi.com/v1/forecast.json"
 
 
