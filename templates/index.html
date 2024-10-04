@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDoリスト</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places"></script>
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+    <h1>My To Do List</h1>
+    <form action="/add" method="post" class="todo">
+        <input type="text" name="title" placeholder="タスク名" required>
+        <input type="datetime-local" name="due_date" required>
+        <button type="submit">追加</button>
+    </form>
+
+    <form action="/search" method="get" class="mt-3">
+        <input type="text" name="query" placeholder="タスクを検索">
+        <button type="submit">検索</button>
+    </form>
+
+    <form class="mt-3" action="https://www.google.com/search" method="GET" target="_blank">
+        <div class="input-group mb-2">
+            <input type="text" name="q" class="form-control" placeholder="Googleで検索">
+            <button type="submit" class="btn btn-primary mx-2">検索</button>
+        </div>
+    </form>
+
+    <ul>
+        {% for todo in todos %}
+        <li>
+            <strong>{{ todo.title }}</strong> - 期限: {{ todo.due_date.strftime('%Y-%m-%d %H:%M') }}
+            {% if todo.overdue %}
+            <span class="overdue">(期限切れ)</span>
+            <img src="{{ url_for('static', filename='george.jpg') }}" class="overdue-image" alt="Overdue">
+            {% endif %}
+            <form action="/delete/{{ todo.id }}" method="post" class="inline-form">
+                <button type="submit">削除</button>
+            </form>
+            <form action="/update/{{ todo.id }}" method="post" class="inline-form">
+                <input type="text" name="title" value="{{ todo.title }}" required>
+                <input type="datetime-local" name="due_date" value="{{ todo.due_date.strftime('%Y-%m-%dT%H:%M') }}" required>
+                <button type="submit">更新</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flash-messages">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    
+    {% if weather_data %}
+    <h2>天気予報 - 香川県高松市</h2>
+    {% if forecast_date %}
+    <p>{{ forecast_date }} の天気予報</p>
+    {% endif %}
+    <table>
+        <tr>
+            <th>時間</th>
+            <th>温度 (℃)</th>
+            <th>天気</th>
+        </tr>
+        {% for forecast in weather_data['forecast']['forecastday'][0]['hour'] %}
+        <tr>
+            <td>{{ forecast['time'].split(' ')[1] }}</td>
+            <td>{{ forecast['temp_c'] }}℃</td>
+            <td>
+                <img src="{{ forecast['condition']['icon'] }}" alt="{{ forecast['condition']['text'] }}">
+                {{ forecast['condition']['text'] }}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    
+    <h2>地図 - 香川県高松市</h2>
+    <form id="place-search-form" class="mt-3">
+        <input type="text" id="place-query" placeholder="場所を検索 (例: カフェ)">
+        <button type="button" onclick="searchPlaces()">検索</button>
+    </form>
+    <div id="map"></div>
+</body>
+</html>
